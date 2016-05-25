@@ -1,12 +1,13 @@
 #include <DmxSimple.h>
 
 const int numPresets = 6;                       // amount of presets
-const int buttonPins[] = {1,2,3,4,5,6};      // buttons pins
+const int buttonPins[] = {1,2,3,4,5,6};         // buttons pins
 const int potPin = A0;                          // pot meter pin
-const int switchPin = A1;                        // on/off switch pin
-const int ledPins[] = {7,8,9,10,12,13};        // led pins
+const int switchPin = A1;                       // on/off switch pin
+const int ledPins[] = {7,8,9,10,12,13};         // led pins
 int brightness, lastBrightness;                 // brightness variables (two to measure if there is a difference)
-int currentPreset = 5;                              // currently active preset
+int currentPreset = 0;                          // currently active preset
+int controllerState = 0;                        // State of the controller, 0 = off, 1 = on
 
 void setPreset(int preset, boolean doLightsOff = true);
 
@@ -28,6 +29,16 @@ void setup() {
 }
 
 void loop() {
+  if(!controllerState && digitalRead(switchPin) == HIGH) {
+    switchOn();
+    controllerState = 1;
+  }
+
+  if(controllerState && !digitalRead(switchPin)) {
+    switchOff();
+    controllerState = 0;
+  }
+  
   if(digitalRead(switchPin)) {
     on();
   } else {
@@ -35,12 +46,12 @@ void loop() {
   }
 }
 
-void off() {
-  // switch everything off
-  for(int i = 0; i < 512; i++) {
-    DmxSimple.write(i,0);
+void switchOn() {
+  for(int i = 0; i < numPresets; i++) {
+    digitalWrite(ledPins[i],HIGH);
   }
-  setLed(-1);
+  delay(1000);
+  setPreset(currentPreset, false);
 }
 
 void on() {
@@ -49,7 +60,7 @@ void on() {
   brightness = map(valuePotPin,0,1023,0,255);
 
   // if the potmeter is adjusted, then update the brightness by setting the preset
-  if(lastBrightness != brightness) {
+  if(lastBrightness + 1 < brightness || lastBrightness - 1 > brightness) {
     lastBrightness = brightness;
     setPreset(currentPreset, false);
   }
@@ -63,6 +74,26 @@ void on() {
   }
 }
 
+void off() {
+  // switch everything off
+  for(int i = 0; i < 512; i++) {
+    DmxSimple.write(i,0);
+  }
+  setLed(-1);
+}
+
+// fun switching off animation with the preset leds
+void switchOff() {
+  for(int i = 0; i < 36; i++) {
+    if(i%6 - 1 < 0) { 
+      digitalWrite(ledPins[5],LOW);
+    }
+    digitalWrite(ledPins[i%6 - 1],LOW);
+    digitalWrite(ledPins[i%6],HIGH);
+    delay(i*4);
+  }
+}
+
 // activate the preset and its led
 void setPreset(int preset, boolean doLightsOff) {  
   currentPreset = preset;   // save the preset that is being set (we need it when updating the brightness
@@ -70,7 +101,8 @@ void setPreset(int preset, boolean doLightsOff) {
 
   // switch all lights off
   if(doLightsOff) lightsOff();
-  
+
+  // set the right preset (this only switches the rights lamps on!)
   switch(preset) {
     case 0: { // presentation
         int channels[] = {34,38,42,46,  49,50,51, 57,58,59, 65,66,67, 73,74,75};
