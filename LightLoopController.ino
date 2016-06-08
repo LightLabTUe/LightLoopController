@@ -8,6 +8,7 @@ const int ledPins[] = {7,8,9,10,12,13};         // led pins
 int brightness, lastBrightness;                 // brightness variables (two to measure if there is a difference)
 int currentPreset = 0;                          // currently active preset
 int controllerState = 0;                        // State of the controller, 0 = off, 1 = on
+unsigned long lastUpdate;                       // for debouncing the pushbuttons (in millis)
 
 void setPreset(int preset, boolean doLightsOff = true);
 
@@ -68,8 +69,9 @@ void on() {
   // read buttons and do preset if a button is pressed
   for(int i = 0; i < numPresets;i++) {
     int valueButtonPin = digitalRead(buttonPins[i]);
-    if(valueButtonPin == HIGH) {
+    if(valueButtonPin == HIGH && lastUpdate + 700 < millis()) {
       setPreset(i);
+      lastUpdate = millis();
     }
   }
 }

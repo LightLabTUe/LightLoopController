@@ -5,7 +5,7 @@ This is the Arduino code for the lightloopcontroller of the lightlab. The contro
 ![Alt text](/controllerPhoto.jpg?raw=true)
 
 # Should fix
-- Flickering of lights when switching between scenes (debounce pushbuttons)
+~~- Flickering of lights when switching between scenes (debounce pushbuttons)~~ (needs uploading)
 
 # Nice to have
 - Make presets with variating max channel levels
