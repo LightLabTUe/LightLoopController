@@ -27,3 +27,7 @@ The electronics of the controller are quite basic, therefore I haven't made an e
 # Help
 
 For questions send an email to: ID [dot] Lightsupport [at] tue [dot] nl
+
+# Last update
+
+2016-10-19
